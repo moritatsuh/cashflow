@@ -865,6 +865,7 @@
       const expBank = getVal("exp_bank");
       const expChildren = getVal("exp_children_total");
       const expOther = getVal("exp_other");
+      const expTax = getVal("exp_tax");
 
       const totalIncome = salary + interest + dividend + reCF + bizCF;
       const totalExpense =
@@ -875,7 +876,8 @@
         expRetail +
         expBank +
         expChildren +
-        expOther;
+        expOther +
+        expTax;
 
       const cf = totalIncome - totalExpense;
       document.getElementById("pl-total-income").textContent = formatYen(totalIncome);
