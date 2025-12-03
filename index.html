@@ -374,7 +374,7 @@
 
       <div class="group-box">
         <div class="group-header">
-          <div class="title">不動産収入（最大10件）</div>
+          <div class="title">不動産収入</div>
           <div class="hint">家賃の月次キャッシュフローを入力</div>
         </div>
         <div id="pl-realestate-rows"></div>
@@ -382,7 +382,7 @@
 
       <div class="group-box">
         <div class="group-header">
-          <div class="title">ビジネス収入（最大5件）</div>
+          <div class="title">ビジネス収入</div>
           <div class="hint">月次キャッシュフローを入力</div>
         </div>
         <div id="pl-business-rows"></div>
@@ -468,7 +468,7 @@
 
       <div class="group-box">
         <div class="group-header">
-          <div class="title">株・投資信託・譲渡性預金（最大10件）</div>
+          <div class="title">株・投資信託・譲渡性預金</div>
           <div class="hint">「口数 × 単価」で評価額を計算</div>
         </div>
         <div id="bs-stock-rows"></div>
@@ -476,7 +476,7 @@
 
       <div class="group-box">
         <div class="group-header">
-          <div class="title">不動産（最大10件）</div>
+          <div class="title">不動産</div>
           <div class="hint">資産としての「価格」を入力</div>
         </div>
         <div id="bs-realestate-rows"></div>
@@ -484,7 +484,7 @@
 
       <div class="group-box">
         <div class="group-header">
-          <div class="title">ビジネス（最大5件）</div>
+          <div class="title">ビジネス</div>
           <div class="hint">評価額（売却価値など）を入力</div>
         </div>
         <div id="bs-business-rows"></div>
@@ -497,7 +497,7 @@
 
       <div class="group-box">
         <div class="group-header">
-          <div class="title">不動産ローン（最大10件）</div>
+          <div class="title">不動産ローン</div>
           <div class="hint">残高と月返済額を記録</div>
         </div>
         <div id="bs-reloan-rows"></div>
@@ -505,7 +505,7 @@
 
       <div class="group-box">
         <div class="group-header">
-          <div class="title">ビジネス負債（最大5件）</div>
+          <div class="title">ビジネス負債</div>
           <div class="hint">残高と月返済額を記録</div>
         </div>
         <div id="bs-bizloan-rows"></div>
@@ -695,7 +695,7 @@
       if (!isFinite(num)) num = 0;
       const sign = num < 0 ? "-" : "";
       num = Math.abs(num);
-      return sign + "¥" + num.toLocaleString("ja-JP", { maximumFractionDigits: 0 });
+      return sign + "$" + num.toLocaleString("ja-JP", { maximumFractionDigits: 0 });
     }
 
     function parseNum(value) {
