@@ -1,1094 +1,236 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover" />
-  <title>Cashflow App</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>キャッシュフロー記録アプリ</title>
 
-  <!-- PWA関連 -->
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#000000">
-  <link rel="apple-touch-icon" href="icon-192.png">
-
-  <style>
-    :root {
-      --bg: #050505;
-      --bg-alt: #151515;
-      --panel: #111111;
-      --gold: #d4af37;
-      --gold-soft: #f1d076;
-      --text: #f5f5f5;
-      --muted: #aaaaaa;
-      --danger: #ff5c5c;
-      --border: #333333;
-      --radius: 14px;
-      --transition: 0.18s ease-out;
-      --shadow-soft: 0 8px 20px rgba(0,0,0,0.55);
-    }
-    * { box-sizing: border-box; }
+<style>
     body {
-      margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: radial-gradient(circle at top, #222 0, #050505 55%);
-      color: var(--text);
-      -webkit-font-smoothing: antialiased;
+        font-family: sans-serif;
+        background: #111;
+        color: #fff;
+        margin: 0;
+        padding: 0;
     }
-    .app {
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 12px 12px 24px;
+    header {
+        background: #000;
+        padding: 15px;
+        font-size: 20px;
+        text-align: center;
+        border-bottom: 1px solid #444;
     }
-    header { padding: 8px 4px 16px; }
-    header h1 {
-      margin: 4px 0;
-      font-size: 1.35rem;
-      letter-spacing: 0.05em;
-      color: var(--gold-soft);
-      text-shadow: 0 0 8px rgba(212,175,55,0.5);
-    }
-    header p {
-      margin: 0;
-      font-size: 0.8rem;
-      color: var(--muted);
-    }
-    .tagline {
-      margin-top: 6px;
-      font-size: 0.8rem;
-      color: var(--gold-soft);
+    .container {
+        padding: 15px;
     }
 
-    .tab-bar {
-      display: flex;
-      gap: 6px;
-      margin-bottom: 10px;
-      padding: 4px;
-      background: linear-gradient(90deg, rgba(212,175,55,0.3), rgba(0,0,0,0.6));
-      border-radius: 999px;
-      border: 1px solid rgba(212,175,55,0.6);
-      box-shadow: 0 0 0 1px rgba(0,0,0,0.6);
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      backdrop-filter: blur(14px);
+    select, input {
+        width: 100%;
+        padding: 10px;
+        margin: 6px 0;
+        border-radius: 6px;
+        border: none;
+        font-size: 16px;
     }
-    .tab-button {
-      flex: 1;
-      border: none;
-      border-radius: 999px;
-      padding: 8px 4px;
-      font-size: 0.8rem;
-      color: var(--muted);
-      background: transparent;
-      cursor: pointer;
-      transition: var(--transition);
-      white-space: nowrap;
-    }
-    .tab-button.active {
-      background: radial-gradient(circle at top, rgba(212,175,55,0.6), rgba(0,0,0,0.9));
-      color: #111;
-      font-weight: 600;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.9);
-    }
-    .tab-button span { display: block; }
-
-    .tab-panel {
-      display: none;
-      background: rgba(8,8,8,0.96);
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      padding: 12px 10px 14px;
-      margin-top: 10px;
-      box-shadow: var(--shadow-soft);
-    }
-    .tab-panel.active { display: block; }
 
     .section-title {
-      font-size: 0.9rem;
-      margin: 6px 0 4px;
-      color: var(--gold-soft);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .section-sub { font-size: 0.7rem; color: var(--muted); margin-bottom: 4px; }
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      gap: 6px;
-    }
-    .field {
-      display: flex;
-      flex-direction: column;
-      margin-bottom: 4px;
-    }
-    .field label {
-      font-size: 0.74rem;
-      color: var(--muted);
-      margin-bottom: 2px;
-      display: flex;
-      justify-content: space-between;
-      gap: 4px;
-    }
-    input[type="number"],
-    input[type="text"] {
-      background: var(--bg-alt);
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 6px 8px;
-      font-size: 0.8rem;
-      outline: none;
-      width: 100%;
-      transition: var(--transition);
-    }
-    input[type="number"]:focus,
-    input[type="text"]:focus {
-      border-color: var(--gold);
-      box-shadow: 0 0 0 1px rgba(212,175,55,0.4);
-    }
-    input[type="number"]::-webkit-outer-spin-button,
-    input[type="number"]::-webkit-inner-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
-    }
-    input[type="number"] { -moz-appearance: textfield; }
-
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 2px 8px;
-      border-radius: 999px;
-      background: rgba(212,175,55,0.05);
-      border: 1px solid rgba(212,175,55,0.3);
-      font-size: 0.7rem;
-      color: var(--gold-soft);
+        margin-top: 25px;
+        font-size: 18px;
+        border-bottom: 1px solid #555;
+        padding-bottom: 5px;
     }
 
-    .summary-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      padding: 4px 0;
-      border-bottom: 1px dashed rgba(255,255,255,0.08);
-      font-size: 0.8rem;
+    .row {
+        display: flex;
+        justify-content: space-between;
+        margin: 6px 0;
     }
-    .summary-row strong { color: var(--gold-soft); }
-    .summary-row span.value { font-variant-numeric: tabular-nums; }
-    .summary-row.total {
-      padding-top: 6px;
-      border-top: 1px solid rgba(255,255,255,0.1);
-      border-bottom: none;
-      margin-top: 4px;
-      font-size: 0.85rem;
-    }
-    .summary-row.total span.value { font-size: 0.9rem; }
-
-    .summary-highlight {
-      margin-top: 10px;
-      padding: 8px 10px;
-      border-radius: 12px;
-      background: radial-gradient(circle at top, rgba(212,175,55,0.24), rgba(0,0,0,0.95));
-      border: 1px solid rgba(212,175,55,0.7);
-      box-shadow: 0 0 18px rgba(0,0,0,0.9);
-      font-size: 0.85rem;
-      text-align: center;
-    }
-    .summary-highlight .label {
-      font-size: 0.76rem;
-      color: var(--muted);
-    }
-    .summary-highlight .big {
-      margin-top: 4px;
-      font-size: 1.05rem;
-      color: var(--gold-soft);
-      font-weight: 600;
-    }
-    .status-badge {
-      margin-top: 6px;
-      font-size: 0.78rem;
-      padding: 4px 8px;
-      border-radius: 999px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(0,0,0,0.7);
-      border: 1px solid rgba(255,255,255,0.1);
-    }
-    .status-badge span.dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      background: var(--danger);
-      box-shadow: 0 0 10px rgba(255,92,92,0.8);
-    }
-    .status-badge.success span.dot {
-      background: var(--gold-soft);
-      box-shadow: 0 0 10px rgba(241,208,118,0.9);
-    }
-    .status-badge.success {
-      border-color: rgba(212,175,55,0.8);
+    .row input {
+        width: 40%;
+        text-align: right;
     }
 
-    .btn-row {
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-      margin-top: 10px;
-      flex-wrap: wrap;
+    .job-img-preview {
+        width: 100%;
+        margin-top: 10px;
+        border-radius: 10px;
+        border: 1px solid #444;
     }
-    button { font-family: inherit; }
-    .btn {
-      border-radius: 999px;
-      border: 1px solid rgba(212,175,55,0.6);
-      padding: 6px 14px;
-      font-size: 0.8rem;
-      background: radial-gradient(circle at top, rgba(212,175,55,0.45), rgba(0,0,0,1));
-      color: #111;
-      cursor: pointer;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.8);
-      transition: var(--transition);
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
+
+    button {
+        width: 100%;
+        padding: 12px;
+        margin-top: 20px;
+        border-radius: 6px;
+        border: none;
+        font-size: 16px;
+        background: #d4af37;
+        color: #000;
     }
-    .btn:active {
-      transform: translateY(1px);
-      box-shadow: 0 3px 10px rgba(0,0,0,0.8);
-    }
-    .btn.secondary {
-      background: rgba(10,10,10,0.9);
-      border-color: var(--border);
-      color: var(--muted);
-      box-shadow: none;
-    }
-    .helper-text {
-      margin-top: 6px;
-      font-size: 0.7rem;
-      color: var(--muted);
-    }
-    .group-box {
-      margin: 8px 0;
-      padding: 6px 6px 2px;
-      border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.06);
-      background: radial-gradient(circle at top left, rgba(255,255,255,0.04), rgba(0,0,0,0.96));
-    }
-    .group-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      margin-bottom: 4px;
-    }
-    .group-header .title {
-      font-size: 0.8rem;
-      color: var(--gold-soft);
-    }
-    .group-header .hint {
-      font-size: 0.7rem;
-      color: var(--muted);
-    }
-    .rows-compact,
-    .rows-compact-4 {
-      display: grid;
-      gap: 4px;
-      font-size: 0.72rem;
-      align-items: center;
-      margin-bottom: 3px;
-    }
-    .rows-compact {
-      grid-template-columns: 0.3fr 0.7fr 0.6fr;
-    }
-    .rows-compact-4 {
-      grid-template-columns: 0.3fr 0.7fr 0.6fr 0.6fr;
-    }
-    .rows-compact span.label,
-    .rows-compact-4 span.label {
-      color: var(--muted);
-    }
-    .rows-compact input,
-    .rows-compact-4 input {
-      font-size: 0.76rem;
-      padding: 4px 6px;
-    }
-    .summary-note {
-      font-size: 0.7rem;
-      color: var(--muted);
-      margin-top: 8px;
-    }
-    @media (min-width: 720px) {
-      .tab-panel { padding: 14px 16px 18px; }
-      header h1 { font-size: 1.5rem; }
-      .rows-compact,
-      .rows-compact-4 { font-size: 0.76rem; }
-    }
-  </style>
+</style>
 </head>
+
 <body>
-  <div class="app">
-    <header>
-      <h1>Cashflow App</h1>
-      <p>ラットレースを抜けるまでの収入・支出・資産・負債を一括管理。</p>
-      <div class="tagline">テーマ：ブラック × ゴールド ／ データはこの端末に自動保存</div>
-    </header>
+<header>キャッシュフロー記録アプリ（$版）</header>
 
-    <div class="tab-bar">
-      <button class="tab-button active" data-tab-target="tab-pl"><span>P/L 収入・支出</span></button>
-      <button class="tab-button" data-tab-target="tab-bs"><span>B/S 資産・負債</span></button>
-      <button class="tab-button" data-tab-target="tab-summary"><span>サマリー</span></button>
-      <button class="tab-button" data-tab-target="tab-settings"><span>設定・リセット</span></button>
-    </div>
+<div class="container">
 
-    <!-- 損益計算書 -->
-    <section class="tab-panel active" id="tab-pl">
-      <div class="section-title">
-      <div class="section-title">
-  <span>職業</span>
-  <span class="pill">JOB</span>
+    <h3>職業を選択</h3>
+    <select id="jobSelector"></select>
+
+    <!-- 職業カード画像アップロード -->
+    <input type="file" id="jobImage" accept="image/*" />
+    <img id="jobPreview" class="job-img-preview">
+
+    <!-- 給与 -->
+    <div class="section-title">給与 / 現金 / 育児費（$）</div>
+    <div class="row"><div>給与（$）</div><input id="salary" type="number"></div>
+    <div class="row"><div>現金（$）</div><input id="cash" type="number"></div>
+    <div class="row"><div>育児費（子1人あたり・$）</div><input id="childCost" type="number"></div>
+
+    <!-- 支出欄 -->
+    <div class="section-title">支出（$/月）</div>
+    <div class="row"><div>税金（$）</div><input id="exp_tax" type="number"></div>
+    <div class="row"><div>住宅ローン（$）</div><input id="exp_house" type="number"></div>
+    <div class="row"><div>教育ローン（$）</div><input id="exp_edu" type="number"></div>
+    <div class="row"><div>車ローン（$）</div><input id="exp_car" type="number"></div>
+    <div class="row"><div>クレジット（$）</div><input id="exp_credit" type="number"></div>
+    <div class="row"><div>小売店つけ（$）</div><input id="exp_store" type="number"></div>
+    <div class="row"><div>銀行返済（$）</div><input id="exp_bank" type="number"></div>
+    <div class="row"><div>その他（$）</div><input id="exp_other" type="number"></div>
+
+    <!-- 負債 -->
+    <div class="section-title">負債残高（$）</div>
+    <div class="row"><div>住宅（$）</div><input id="debt_house" type="number"></div>
+    <div class="row"><div>教育（$）</div><input id="debt_edu" type="number"></div>
+    <div class="row"><div>車（$）</div><input id="debt_car" type="number"></div>
+    <div class="row"><div>クレジット（$）</div><input id="debt_credit" type="number"></div>
+    <div class="row"><div>小売店（$）</div><input id="debt_store" type="number"></div>
+    <div class="row"><div>銀行（$）</div><input id="debt_bank" type="number"></div>
+
 </div>
 
-<div class="field" style="margin-bottom:12px;">
-  <label>職業名を入力してください</label>
-  <input type="text" placeholder="例：医師、教師、エンジニアなど" data-key="job_title" />
-</div>
-  <span>収入</span>
-        <span class="pill">INCOME</span>
-      </div>
-      <div class="grid-2">
-        <div>
-          <div class="field">
-            <label>給与 <span>¥</span></label>
-            <input type="number" inputmode="decimal" data-key="inc_salary" />
-          </div>
-          <div class="field">
-            <label>利息 <span>¥</span></label>
-            <input type="number" inputmode="decimal" data-key="inc_interest" />
-          </div>
-          <div class="field">
-            <label>配当 <span>¥</span></label>
-            <input type="number" inputmode="decimal" data-key="inc_dividend" />
-          </div>
-        </div>
-        <div>
-          <div class="field">
-            <label>子どもの数</label>
-            <input type="number" inputmode="numeric" min="0" step="1" data-key="children_count" />
-          </div>
-          <div class="field">
-            <label>子ども一人あたりの高児費 <span>¥</span></label>
-            <input type="number" inputmode="decimal" data-key="children_cost_per" />
-          </div>
-        </div>
-      </div>
+<script>
+// ----------------------------------------------------
+// 職業データ（モタさん最新修正版 / 単位は$）
+// ----------------------------------------------------
+const jobs = {
+"警察官": {
+ salary:3000, cash:520, childCost:160,
+ exp:{tax:580,house:400,edu:0,car:100,credit:60,store:50,bank:0,other:690},
+ debt:{house:46000,edu:0,car:5000,credit:2000,store:1000,bank:0}
+},
+"教師": {
+ salary:3300, cash:400, childCost:180,
+ exp:{tax:630,house:500,edu:60,car:100,credit:90,store:50,bank:0,other:760},
+ debt:{house:50000,edu:12000,car:5000,credit:3000,store:1000,bank:0}
+},
+"看護婦": {
+ salary:3100, cash:480, childCost:170,
+ exp:{tax:600,house:400,edu:30,car:100,credit:90,store:50,bank:0,other:710},
+ debt:{house:47000,edu:6000,car:5000,credit:3000,store:1000,bank:0}
+},
+"エンジニア": {
+ salary:4900, cash:400, childCost:250,
+ exp:{tax:1050,house:700,edu:60,car:140,credit:120,store:50,bank:0,other:1090},
+ debt:{house:75000,edu:12000,car:7000,credit:4000,store:1000,bank:0}
+},
+"パイロット": {
+ salary:9500, cash:400, childCost:480,
+ exp:{tax:2350,house:1330,edu:0,car:300,credit:660,store:50,bank:0,other:2210},
+ debt:{house:143000,edu:0,car:15000,credit:22000,store:1000,bank:0}
+},
+"弁護士": {
+ salary:7500, cash:400, childCost:380,
+ exp:{tax:1830,house:1100,edu:390,car:220,credit:180,store:50,bank:0,other:1650},
+ debt:{house:115000,edu:78000,car:11000,credit:6000,store:1000,bank:0}
+},
+"秘書": {
+ salary:2500, cash:710, childCost:140,
+ exp:{tax:460,house:400,edu:0,car:80,credit:60,store:50,bank:0,other:570},
+ debt:{house:38000,edu:0,car:4000,credit:2000,store:1000,bank:0}
+},
+"医師": {
+ salary:13200, cash:400, childCost:640,
+ exp:{tax:3420,house:1900,edu:750,car:380,credit:270,store:50,bank:0,other:2880},
+ debt:{house:202000,edu:150000,car:19000,credit:9000,store:1000,bank:0}
+},
+"ビジネスマネジャー": {
+ salary:4600, cash:400, childCost:240,
+ exp:{tax:910,house:700,edu:60,car:120,credit:90,store:50,bank:0,other:1000},
+ debt:{house:75000,edu:12000,car:6000,credit:3000,store:1000,bank:0}
+},
+"機械工": {
+ salary:2000, cash:670, childCost:110,
+ exp:{tax:360,house:300,edu:0,car:60,credit:60,store:50,bank:0,other:450},
+ debt:{house:31000,edu:0,car:3000,credit:2000,store:1000,bank:0}
+},
+"トラック運転手": {
+ salary:2500, cash:750, childCost:140,
+ exp:{tax:460,house:400,edu:0,car:80,credit:60,store:50,bank:0,other:570},
+ debt:{house:38000,edu:0,car:4000,credit:2000,store:1000,bank:0}
+},
+"ビル管理人": {
+ salary:1600, cash:560, childCost:70,
+ exp:{tax:280,house:200,edu:0,car:60,credit:60,store:50,bank:0,other:300},
+ debt:{house:20000,edu:0,car:4000,credit:2000,store:1000,bank:0}
+}
+};
 
-      <div class="group-box">
-        <div class="group-header">
-          <div class="title">不動産収入（最大10件）</div>
-          <div class="hint">家賃の月次キャッシュフローを入力</div>
-        </div>
-        <div id="pl-realestate-rows"></div>
-      </div>
-
-      <div class="group-box">
-        <div class="group-header">
-          <div class="title">ビジネス収入（最大5件）</div>
-          <div class="hint">月次キャッシュフローを入力</div>
-        </div>
-        <div id="pl-business-rows"></div>
-      </div>
-
-      <div class="section-title" style="margin-top:10px;">
-        <span>支出</span>
-        <span class="pill">EXPENSES</span>
-      </div>
-      <div class="grid-2">
-        <div>
-          <div class="field">
-            <label>住宅ローン <span>¥</span></label>
-            <input type="number" inputmode="decimal" data-key="exp_housing" />
-          </div>
-          <div class="field">
-            <label>教育ローン <span>¥</span></label>
-            <input type="number" inputmode="decimal" data-key="exp_education" />
-          </div>
-          <div class="field">
-            <label>自動車ローン <span>¥</span></label>
-            <input type="number" inputmode="decimal" data-key="exp_car" />
-          </div>
-          <div class="field">
-            <label>クレジットカード <span>¥</span></label>
-            <input type="number" inputmode="decimal" data-key="exp_credit" />
-          </div>
-        </div>
-        <div>
-          <div class="field">
-            <label>小売店のつけ <span>¥</span></label>
-            <input type="number" inputmode="decimal" data-key="exp_retail" />
-          </div>
-          <div class="field">
-            <label>銀行ローン <span>¥</span></label>
-            <input type="number" inputmode="decimal" data-key="exp_bank" />
-          </div>
-          <div class="field">
-            <label>育児費（合計） <span>¥</span></label>
-            <input type="number" inputmode="decimal" data-key="exp_children_total" />
-          </div>
-          <div class="field">
-            <label>その他の支払い <span>¥</span></label>
-            <input type="number" inputmode="decimal" data-key="exp_other" />
-          </div>
-        </div>
-      </div>
-
-      <div class="group-box">
-        <div class="group-header">
-          <div class="title">集計</div>
-        </div>
-        <div class="summary-row">
-          <span>総収入</span>
-          <span class="value" id="pl-total-income">¥0</span>
-        </div>
-        <div class="summary-row">
-          <span>総支出</span>
-          <span class="value" id="pl-total-expense">¥0</span>
-        </div>
-        <div class="summary-row total">
-          <strong>毎月のキャッシュフロー</strong>
-          <span class="value" id="pl-cashflow">¥0</span>
-        </div>
-      </div>
-
-      <div class="helper-text">
-        入力すると自動的に保存・集計されます（この端末のローカルストレージ使用）。
-      </div>
-    </section>
-
-    <!-- 貸借対照表 -->
-    <section class="tab-panel" id="tab-bs">
-      <div class="section-title">
-        <span>資産</span>
-        <span class="pill">ASSETS</span>
-      </div>
-
-      <div class="field">
-        <label>現金・預金 <span>¥</span></label>
-        <input type="number" inputmode="decimal" data-key="as_cash" />
-      </div>
-
-      <div class="group-box">
-        <div class="group-header">
-          <div class="title">株・投資信託・譲渡性預金（最大10件）</div>
-          <div class="hint">「口数 × 単価」で評価額を計算</div>
-        </div>
-        <div id="bs-stock-rows"></div>
-      </div>
-
-      <div class="group-box">
-        <div class="group-header">
-          <div class="title">不動産（最大10件）</div>
-          <div class="hint">資産としての「価格」を入力</div>
-        </div>
-        <div id="bs-realestate-rows"></div>
-      </div>
-
-      <div class="group-box">
-        <div class="group-header">
-          <div class="title">ビジネス（最大5件）</div>
-          <div class="hint">評価額（売却価値など）を入力</div>
-        </div>
-        <div id="bs-business-rows"></div>
-      </div>
-
-      <div class="section-title" style="margin-top:10px;">
-        <span>負債</span>
-        <span class="pill">LIABILITIES</span>
-      </div>
-
-      <div class="group-box">
-        <div class="group-header">
-          <div class="title">不動産ローン（最大10件）</div>
-          <div class="hint">残高と月返済額を記録</div>
-        </div>
-        <div id="bs-reloan-rows"></div>
-      </div>
-
-      <div class="group-box">
-        <div class="group-header">
-          <div class="title">ビジネス負債（最大5件）</div>
-          <div class="hint">残高と月返済額を記録</div>
-        </div>
-        <div id="bs-bizloan-rows"></div>
-      </div>
-
-      <div class="group-box">
-        <div class="group-header">
-          <div class="title">その他の負債（合計）</div>
-        </div>
-        <div class="grid-2">
-          <div>
-            <div class="field">
-              <label>住宅ローン残高 <span>¥</span></label>
-              <input type="number" inputmode="decimal" data-key="liab_housing" />
-            </div>
-            <div class="field">
-              <label>教育ローン残高 <span>¥</span></label>
-              <input type="number" inputmode="decimal" data-key="liab_education" />
-            </div>
-            <div class="field">
-              <label>自動車ローン残高 <span>¥</span></label>
-              <input type="number" inputmode="decimal" data-key="liab_car" />
-            </div>
-          </div>
-          <div>
-            <div class="field">
-              <label>クレジットカード残高 <span>¥</span></label>
-              <input type="number" inputmode="decimal" data-key="liab_credit" />
-            </div>
-            <div class="field">
-              <label>小売店のつけ残高 <span>¥</span></label>
-              <input type="number" inputmode="decimal" data-key="liab_retail" />
-            </div>
-            <div class="field">
-              <label>銀行ローン残高 <span>¥</span></label>
-              <input type="number" inputmode="decimal" data-key="liab_bank" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="group-box">
-        <div class="group-header">
-          <div class="title">集計</div>
-        </div>
-        <div class="summary-row">
-          <span>資産合計</span>
-          <span class="value" id="bs-total-assets">¥0</span>
-        </div>
-        <div class="summary-row">
-          <span>負債合計</span>
-          <span class="value" id="bs-total-liab">¥0</span>
-        </div>
-        <div class="summary-row total">
-          <strong>純資産（資産 − 負債）</strong>
-          <span class="value" id="bs-networth">¥0</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- サマリー -->
-    <section class="tab-panel" id="tab-summary">
-      <div class="section-title">
-        <span>サマリー</span>
-        <span class="pill">SUMMARY</span>
-      </div>
-
-      <div class="group-box">
-        <div class="group-header">
-          <div class="title">キャッシュフロー</div>
-          <div class="hint">毎月の収支を一覧</div>
-        </div>
-        <div class="summary-row">
-          <span>総収入</span>
-          <span class="value" id="sum-total-income">¥0</span>
-        </div>
-        <div class="summary-row">
-          <span>総支出</span>
-          <span class="value" id="sum-total-expense">¥0</span>
-        </div>
-        <div class="summary-row total">
-          <strong>毎月のキャッシュフロー</strong>
-          <span class="value" id="sum-cashflow">¥0</span>
-        </div>
-      </div>
-
-      <div class="group-box">
-        <div class="group-header">
-          <div class="title">不労所得</div>
-          <div class="hint">利息 + 配当 + 不動産CF + ビジネスCF</div>
-        </div>
-        <div class="summary-row">
-          <span>利息</span>
-          <span class="value" id="sum-interest">¥0</span>
-        </div>
-        <div class="summary-row">
-          <span>配当</span>
-          <span class="value" id="sum-dividend">¥0</span>
-        </div>
-        <div class="summary-row">
-          <span>不動産CF 合計</span>
-          <span class="value" id="sum-re-cf">¥0</span>
-        </div>
-        <div class="summary-row">
-          <span>ビジネスCF 合計</span>
-          <span class="value" id="sum-biz-cf">¥0</span>
-        </div>
-        <div class="summary-row total">
-          <strong>不労所得 合計</strong>
-          <span class="value" id="sum-passive">¥0</span>
-        </div>
-      </div>
-
-      <div class="group-box">
-        <div class="group-header">
-          <div class="title">資産・負債</div>
-          <div class="hint">ゲーム全体のバランスを見る</div>
-        </div>
-        <div class="summary-row">
-          <span>資産合計</span>
-          <span class="value" id="sum-assets">¥0</span>
-        </div>
-        <div class="summary-row">
-          <span>負債合計</span>
-          <span class="value" id="sum-liab">¥0</span>
-        </div>
-        <div class="summary-row total">
-          <strong>純資産</strong>
-          <span class="value" id="sum-networth">¥0</span>
-        </div>
-      </div>
-
-      <div class="summary-highlight">
-        <div class="label">ラットレース脱出判定</div>
-        <div class="big" id="rr-status-text">まだ脱出前です。</div>
-        <div class="status-badge" id="rr-status-badge">
-          <span class="dot"></span>
-          <span id="rr-status-detail">不労所得が総支出を上回ったらクリア！</span>
-        </div>
-      </div>
-
-      <div class="summary-note">
-        損益計算書と貸借対照表のタブで数字を更新すると、この画面も自動的に反映されます。
-      </div>
-    </section>
-
-    <!-- 設定・リセット -->
-    <section class="tab-panel" id="tab-settings">
-      <div class="section-title">
-        <span>設定・リセット</span>
-        <span class="pill">SETTINGS</span>
-      </div>
-      <p style="font-size:0.8rem; color:var(--muted);">
-        データはブラウザのローカルストレージに自動保存されています。<br>
-        ここからバックアップ用のJSON書き出しや、ゲーム開始時のリセットができます。
-      </p>
-
-      <div class="group-box">
-        <div class="group-header">
-          <div class="title">データ操作</div>
-        </div>
-        <div class="btn-row">
-          <button class="btn secondary" id="btn-export">データを書き出す</button>
-          <button class="btn secondary" id="btn-import">データを読み込む</button>
-          <button class="btn" id="btn-reset">全てリセット</button>
-        </div>
-        <div class="helper-text">
-          書き出し：コピーしてメモ帳などに保存しておくとバックアップになります。<br>
-          読み込み：保存しておいたJSON文字列を貼り付けて復元できます。
-        </div>
-      </div>
-
-      <div class="group-box">
-        <div class="group-header">
-          <div class="title">データJSON</div>
-          <div class="hint">バックアップ・復元用</div>
-        </div>
-        <textarea id="json-area" style="width:100%; min-height:120px; background:#050505; color:var(--text); border-radius:10px; border:1px solid var(--border); padding:6px 8px; font-size:0.75rem;"></textarea>
-      </div>
-    </section>
-  </div>
-
-  <script>
-    const STORAGE_KEY = "cf_game_mobile_v1";
-
-    function formatYen(num) {
-      if (!isFinite(num)) num = 0;
-      const sign = num < 0 ? "-" : "";
-      num = Math.abs(num);
-      return sign + "¥" + num.toLocaleString("ja-JP", { maximumFractionDigits: 0 });
+// プルダウンに職業をセット
+window.onload = () => {
+    const selector = document.getElementById("jobSelector");
+    for (let j in jobs) {
+        let opt = document.createElement("option");
+        opt.value = j;
+        opt.textContent = j;
+        selector.appendChild(opt);
     }
+};
 
-    function parseNum(value) {
-      if (typeof value === "string") {
-        value = value.replace(/,/g, "");
-      }
-      const n = parseFloat(value);
-      return isNaN(n) ? 0 : n;
-    }
+// 職業選択で反映
+document.getElementById("jobSelector").addEventListener("change", (e)=>{
+    const job = jobs[e.target.value];
+    if (!job) return;
 
-    function buildRows() {
-      const rePL = document.getElementById("pl-realestate-rows");
-      for (let i = 1; i <= 10; i++) {
-        const row = document.createElement("div");
-        row.className = "rows-compact";
-        row.innerHTML = `
-          <span class="label">No.${i}</span>
-          <input type="text" placeholder="物件名" data-key="pl_re_${i}_name">
-          <input type="number" inputmode="decimal" placeholder="月次CF" data-key="pl_re_${i}_cf">
-        `;
-        rePL.appendChild(row);
-      }
+    document.getElementById("salary").value = job.salary;
+    document.getElementById("cash").value = job.cash;
+    document.getElementById("childCost").value = job.childCost;
 
-      const bizPL = document.getElementById("pl-business-rows");
-      for (let i = 1; i <= 5; i++) {
-        const row = document.createElement("div");
-        row.className = "rows-compact";
-        row.innerHTML = `
-          <span class="label">No.${i}</span>
-          <input type="text" placeholder="事業名" data-key="pl_biz_${i}_name">
-          <input type="number" inputmode="decimal" placeholder="月次CF" data-key="pl_biz_${i}_cf">
-        `;
-        bizPL.appendChild(row);
-      }
+    // 支出
+    document.getElementById("exp_tax").value = job.exp.tax;
+    document.getElementById("exp_house").value = job.exp.house;
+    document.getElementById("exp_edu").value = job.exp.edu;
+    document.getElementById("exp_car").value = job.exp.car;
+    document.getElementById("exp_credit").value = job.exp.credit;
+    document.getElementById("exp_store").value = job.exp.store;
+    document.getElementById("exp_bank").value = job.exp.bank;
+    document.getElementById("exp_other").value = job.exp.other;
 
-      const bsStock = document.getElementById("bs-stock-rows");
-      for (let i = 1; i <= 10; i++) {
-        const row = document.createElement("div");
-        row.className = "rows-compact-4";
-        row.innerHTML = `
-          <span class="label">No.${i}</span>
-          <input type="text" placeholder="銘柄" data-key="as_stock_${i}_name">
-          <input type="number" inputmode="decimal" placeholder="口数" data-key="as_stock_${i}_units">
-          <input type="number" inputmode="decimal" placeholder="単価" data-key="as_stock_${i}_price">
-        `;
-        bsStock.appendChild(row);
-      }
+    // 負債
+    document.getElementById("debt_house").value = job.debt.house;
+    document.getElementById("debt_edu").value = job.debt.edu;
+    document.getElementById("debt_car").value = job.debt.car;
+    document.getElementById("debt_credit").value = job.debt.credit;
+    document.getElementById("debt_store").value = job.debt.store;
+    document.getElementById("debt_bank").value = job.debt.bank;
 
-      const bsRE = document.getElementById("bs-realestate-rows");
-      for (let i = 1; i <= 10; i++) {
-        const row = document.createElement("div");
-        row.className = "rows-compact-4";
-        row.innerHTML = `
-          <span class="label">No.${i}</span>
-          <input type="text" placeholder="物件名" data-key="as_re_${i}_name">
-          <input type="number" inputmode="decimal" placeholder="頭金" data-key="as_re_${i}_down">
-          <input type="number" inputmode="decimal" placeholder="価格" data-key="as_re_${i}_price">
-        `;
-        bsRE.appendChild(row);
-      }
+    // 画像初期化
+    document.getElementById("jobPreview").src = "";
+});
 
-      const bsBiz = document.getElementById("bs-business-rows");
-      for (let i = 1; i <= 5; i++) {
-        const row = document.createElement("div");
-        row.className = "rows-compact-4";
-        row.innerHTML = `
-          <span class="label">No.${i}</span>
-          <input type="text" placeholder="ビジネス名" data-key="as_biz_${i}_name">
-          <input type="number" inputmode="decimal" placeholder="頭金" data-key="as_biz_${i}_down">
-          <input type="number" inputmode="decimal" placeholder="評価額" data-key="as_biz_${i}_value">
-        `;
-        bsBiz.appendChild(row);
-      }
+// アップロード画像プレビュー
+document.getElementById("jobImage").addEventListener("change",(e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
 
-      const reLoan = document.getElementById("bs-reloan-rows");
-      for (let i = 1; i <= 10; i++) {
-        const row = document.createElement("div");
-        row.className = "rows-compact-4";
-        row.innerHTML = `
-          <span class="label">No.${i}</span>
-          <input type="text" placeholder="物件名" data-key="liab_reloan_${i}_name">
-          <input type="number" inputmode="decimal" placeholder="残高" data-key="liab_reloan_${i}_bal">
-          <input type="number" inputmode="decimal" placeholder="月返済" data-key="liab_reloan_${i}_pay">
-        `;
-        reLoan.appendChild(row);
-      }
+    const reader = new FileReader();
+    reader.onload = ()=>{
+        document.getElementById("jobPreview").src = reader.result;
+    };
+    reader.readAsDataURL(file);
+});
+</script>
 
-      const bizLoan = document.getElementById("bs-bizloan-rows");
-      for (let i = 1; i <= 5; i++) {
-        const row = document.createElement("div");
-        row.className = "rows-compact-4";
-        row.innerHTML = `
-          <span class="label">No.${i}</span>
-          <input type="text" placeholder="事業名" data-key="liab_bizloan_${i}_name">
-          <input type="number" inputmode="decimal" placeholder="残高" data-key="liab_bizloan_${i}_bal">
-          <input type="number" inputmode="decimal" placeholder="月返済" data-key="liab_bizloan_${i}_pay">
-        `;
-        bizLoan.appendChild(row);
-      }
-    }
-
-    function collectInputs() {
-      return document.querySelectorAll("[data-key]");
-    }
-
-    function loadData() {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
-      try {
-        const data = JSON.parse(raw);
-        const inputs = collectInputs();
-        inputs.forEach(inp => {
-          const key = inp.dataset.key;
-          if (data.hasOwnProperty(key)) {
-            inp.value = data[key];
-          }
-        });
-      } catch (err) {
-        console.warn("Failed to load data:", err);
-      }
-    }
-
-    function saveData() {
-      const inputs = collectInputs();
-      const data = {};
-      inputs.forEach(inp => {
-        data[inp.dataset.key] = inp.value;
-      });
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      updateAll();
-    }
-
-    function resetData() {
-      if (!confirm("本当に全てのデータをリセットしますか？")) return;
-      localStorage.removeItem(STORAGE_KEY);
-      const inputs = collectInputs();
-      inputs.forEach(inp => inp.value = "");
-      updateAll();
-    }
-
-    function getVal(key) {
-      const el = document.querySelector('[data-key="' + key + '"]');
-      if (!el) return 0;
-      return parseNum(el.value);
-    }
-
-    function calcPL() {
-      const salary = getVal("inc_salary");
-      const interest = getVal("inc_interest");
-      const dividend = getVal("inc_dividend");
-
-      let reCF = 0;
-      for (let i = 1; i <= 10; i++) {
-        reCF += getVal("pl_re_" + i + "_cf");
-      }
-
-      let bizCF = 0;
-      for (let i = 1; i <= 5; i++) {
-        bizCF += getVal("pl_biz_" + i + "_cf");
-      }
-
-      const expHousing = getVal("exp_housing");
-      const expEdu = getVal("exp_education");
-      const expCar = getVal("exp_car");
-      const expCredit = getVal("exp_credit");
-      const expRetail = getVal("exp_retail");
-      const expBank = getVal("exp_bank");
-      const expChildren = getVal("exp_children_total");
-      const expOther = getVal("exp_other");
-
-      const totalIncome = salary + interest + dividend + reCF + bizCF;
-      const totalExpense =
-        expHousing +
-        expEdu +
-        expCar +
-        expCredit +
-        expRetail +
-        expBank +
-        expChildren +
-        expOther;
-
-      const cf = totalIncome - totalExpense;
-      document.getElementById("pl-total-income").textContent = formatYen(totalIncome);
-      document.getElementById("pl-total-expense").textContent = formatYen(totalExpense);
-      document.getElementById("pl-cashflow").textContent = formatYen(cf);
-
-      return {
-        salary,
-        interest,
-        dividend,
-        reCF,
-        bizCF,
-        totalIncome,
-        totalExpense,
-        cf,
-        passive: interest + dividend + reCF + bizCF
-      };
-    }
-
-    function calcBS() {
-      const cash = getVal("as_cash");
-
-      let stockTotal = 0;
-      for (let i = 1; i <= 10; i++) {
-        const units = getVal("as_stock_" + i + "_units");
-        const price = getVal("as_stock_" + i + "_price");
-        stockTotal += units * price;
-      }
-
-      let reTotal = 0;
-      for (let i = 1; i <= 10; i++) {
-        const price = getVal("as_re_" + i + "_price");
-        reTotal += price;
-      }
-
-      let bizTotal = 0;
-      for (let i = 1; i <= 5; i++) {
-        const value = getVal("as_biz_" + i + "_value");
-        bizTotal += value;
-      }
-
-      const assetsTotal = cash + stockTotal + reTotal + bizTotal;
-
-      let reLoanTotal = 0;
-      for (let i = 1; i <= 10; i++) {
-        reLoanTotal += getVal("liab_reloan_" + i + "_bal");
-      }
-      let bizLoanTotal = 0;
-      for (let i = 1; i <= 5; i++) {
-        bizLoanTotal += getVal("liab_bizloan_" + i + "_bal");
-      }
-
-      const liabHousing = getVal("liab_housing");
-      const liabEdu = getVal("liab_education");
-      const liabCar = getVal("liab_car");
-      const liabCredit = getVal("liab_credit");
-      const liabRetail = getVal("liab_retail");
-      const liabBank = getVal("liab_bank");
-
-      const liabTotal =
-        reLoanTotal +
-        bizLoanTotal +
-        liabHousing +
-        liabEdu +
-        liabCar +
-        liabCredit +
-        liabRetail +
-        liabBank;
-
-      const networth = assetsTotal - liabTotal;
-
-      document.getElementById("bs-total-assets").textContent = formatYen(assetsTotal);
-      document.getElementById("bs-total-liab").textContent = formatYen(liabTotal);
-      document.getElementById("bs-networth").textContent = formatYen(networth);
-
-      return {
-        assetsTotal,
-        liabTotal,
-        networth
-      };
-    }
-
-    function updateSummary(pl, bs) {
-      document.getElementById("sum-total-income").textContent = formatYen(pl.totalIncome);
-      document.getElementById("sum-total-expense").textContent = formatYen(pl.totalExpense);
-      document.getElementById("sum-cashflow").textContent = formatYen(pl.cf);
-
-      document.getElementById("sum-interest").textContent = formatYen(pl.interest);
-      document.getElementById("sum-dividend").textContent = formatYen(pl.dividend);
-      document.getElementById("sum-re-cf").textContent = formatYen(pl.reCF);
-      document.getElementById("sum-biz-cf").textContent = formatYen(pl.bizCF);
-      document.getElementById("sum-passive").textContent = formatYen(pl.passive);
-
-      document.getElementById("sum-assets").textContent = formatYen(bs.assetsTotal);
-      document.getElementById("sum-liab").textContent = formatYen(bs.liabTotal);
-      document.getElementById("sum-networth").textContent = formatYen(bs.networth);
-
-      const rrText = document.getElementById("rr-status-text");
-      const rrBadge = document.getElementById("rr-status-badge");
-      const rrDetail = document.getElementById("rr-status-detail");
-
-      if (pl.passive >= pl.totalExpense && pl.totalExpense > 0) {
-        rrText.textContent = "ラットレース脱出おめでとう！";
-        rrBadge.classList.add("success");
-        rrDetail.textContent = "不労所得が総支出を上回っています。ファーストトラックへ！";
-      } else {
-        rrText.textContent = "まだ脱出前です。";
-        rrBadge.classList.remove("success");
-        const diff = Math.max(0, pl.totalExpense - pl.passive);
-        rrDetail.textContent =
-          "あと " + formatYen(diff).replace("¥", "") + " ドルの不労所得アップでラットレース脱出。";
-      }
-    }
-
-    function updateAll() {
-      const pl = calcPL();
-      const bs = calcBS();
-      updateSummary(pl, bs);
-      const data = {};
-      collectInputs().forEach(inp => data[inp.dataset.key] = inp.value);
-      const jsonArea = document.getElementById("json-area");
-      if (jsonArea) {
-        jsonArea.value = JSON.stringify(data, null, 2);
-      }
-    }
-
-    function setupTabs() {
-      const buttons = document.querySelectorAll(".tab-button");
-      const panels = document.querySelectorAll(".tab-panel");
-
-      buttons.forEach(btn => {
-        const handler = () => {
-          const targetId = btn.dataset.tabTarget;
-          buttons.forEach(b => b.classList.remove("active"));
-          btn.classList.add("active");
-          panels.forEach(p => {
-            p.classList.toggle("active", p.id === targetId);
-          });
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        };
-        btn.addEventListener("click", handler, false);
-        btn.addEventListener("touchend", function(e){
-          e.preventDefault();
-          handler();
-        }, false);
-      });
-    }
-
-    function setupSettings() {
-      document.getElementById("btn-reset").addEventListener("click", resetData);
-      document.getElementById("btn-export").addEventListener("click", () => {
-        const data = {};
-        collectInputs().forEach(inp => data[inp.dataset.key] = inp.value);
-        document.getElementById("json-area").value = JSON.stringify(data, null, 2);
-        alert("現在のデータをJSONとして表示しました。コピーして保存してください。");
-      });
-      document.getElementById("btn-import").addEventListener("click", () => {
-        const raw = document.getElementById("json-area").value.trim();
-        if (!raw) {
-          alert("JSONが入力されていません。");
-          return;
-        }
-        try {
-          const data = JSON.parse(raw);
-          const inputs = collectInputs();
-          inputs.forEach(inp => {
-            const key = inp.dataset.key;
-            if (data.hasOwnProperty(key)) {
-              inp.value = data[key];
-            }
-          });
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-          updateAll();
-          alert("JSONからデータを復元しました。");
-        } catch (err) {
-          alert("JSONの読み込みに失敗しました。形式を確認してください。");
-        }
-      });
-    }
-
-    function setupAutoSave() {
-      const inputs = collectInputs();
-      inputs.forEach(inp => {
-        inp.addEventListener("input", () => {
-          saveData();
-        });
-      });
-    }
-
-    function registerServiceWorker() {
-      if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("service-worker.js").catch(() => {});
-      }
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      buildRows();
-      loadData();
-      setupTabs();
-      setupSettings();
-      setupAutoSave();
-      updateAll();
-      registerServiceWorker();
-    });
-  </script>
 </body>
 </html>
